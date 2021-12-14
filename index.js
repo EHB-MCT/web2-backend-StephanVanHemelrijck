@@ -34,7 +34,6 @@ app.get("/users", async (req, res) => {
         // Send back the file
         res.status(200).send(users);
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: "Could not retrieve all users",
             value: e,
@@ -69,7 +68,6 @@ app.post("/users/register", async (req, res) => {
         // Hashing password
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(req.body.password, salt);
-        console.log(hashedPassword);
 
         // Creating user
         let newUser = {
