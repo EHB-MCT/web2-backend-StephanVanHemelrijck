@@ -94,6 +94,40 @@ app.post("/users/register", async (req, res) => {
     }
 });
 
+app.post("/users/login", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const col = client.db(dbName).collection("users");
+
+        // Validate that there is a username and a password in query
+        if (!req.body.email || !req.body.password) {
+            throw new ReferenceError("Missing email or password in body.");
+        }
+        // Look for account with given email
+        const user = await col.findOne({ email: req.body.email });
+        if (!user) {
+            throw new ReferenceError("Account with this e-mail does not exist.");
+        }
+        // Compare the given password to the password stored in the database
+        const isPasswordCorrect = bcrypt.compareSync(req.body.password, user.password);
+
+        // Send success login message
+        if (isPasswordCorrect) {
+            res.status(200).send("Succesfully logged in.");
+        } else {
+            throw new Error("Wrong password.");
+        }
+    } catch (e) {
+        res.status(500).send({
+            error: e.name,
+            value: e.message,
+        });
+    } finally {
+        await client.close;
+    }
+});
+
 app.listen(port, () => {
     console.log(`Api is running at https://localhost:${port}`);
 });
