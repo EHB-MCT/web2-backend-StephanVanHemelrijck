@@ -110,7 +110,7 @@ app.post("/users/login", async (req, res) => {
 
         // Send success login message
         if (isPasswordCorrect) {
-            res.status(200).send("Succesfully logged in.");
+            res.status(200).json({ message: "Successfully logged in" });
         } else {
             throw new Error("Wrong password.");
         }
