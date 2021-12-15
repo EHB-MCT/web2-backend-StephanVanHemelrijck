@@ -55,16 +55,14 @@ app.post("/users/register", async (req, res) => {
         // Validation
         // Checking if input fields are empty
         if (!req.body.username || !req.body.email || !req.body.password) {
-            res.status(400).send("Bad request. You are either missing a username, email or password");
-            return;
+            throw new Error("Bad request. You are either missing a username, email or password");
         }
         // Checking if email already exists
         const user = await col.findOne({
             email: req.body.email,
         });
         if (user) {
-            res.status(400).send(`An account with email "${req.body.email}" already exists`);
-            return;
+            throw new Error(`An account with email "${req.body.email}" already exists`);
         }
 
         // Hashing password
@@ -82,12 +80,10 @@ app.post("/users/register", async (req, res) => {
         let insertRes = await col.insertOne(newUser);
         // Send back success message
         res.status(201).json(newUser);
-
-        return;
-    } catch (error) {
+    } catch (e) {
         res.status(500).send({
-            error: "Something went wrong... Try again later",
-            value: error,
+            error: e.name,
+            value: e.message,
         });
     } finally {
         await client.close;
@@ -102,12 +98,12 @@ app.post("/users/login", async (req, res) => {
 
         // Validate that there is a username and a password in query
         if (!req.body.email || !req.body.password) {
-            throw new ReferenceError("Missing email or password in body.");
+            throw new Error("Missing email or password in body.");
         }
         // Look for account with given email
         const user = await col.findOne({ email: req.body.email });
         if (!user) {
-            throw new ReferenceError("Account with this e-mail does not exist.");
+            throw new Error("Account with this e-mail does not exist.");
         }
         // Compare the given password to the password stored in the database
         const isPasswordCorrect = bcrypt.compareSync(req.body.password, user.password);
