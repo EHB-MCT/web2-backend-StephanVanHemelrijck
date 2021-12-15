@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
+const cors = require("cors");
 
 // Express server stuff
 const app = express();
@@ -11,6 +12,7 @@ const port = process.env.PORT;
 // Middleware
 app.use(express.static("public"));
 app.use(bodyParser.json());
+app.use(cors());
 
 // Replace the following with your Atlas connection string
 const client = new MongoClient(process.env.FINAL_URL);
