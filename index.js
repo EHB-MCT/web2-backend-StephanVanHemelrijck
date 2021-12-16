@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 
 // Express server stuff
 const app = express();
@@ -69,11 +70,15 @@ app.post("/users/register", async (req, res) => {
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(req.body.password, salt);
 
+        // Creating token
+        const token = jwt.sign({ sub: req.body.email }, process.env.TOKEN_KEY, { expiresIn: 60 * 60 });
+
         // Creating user
         let newUser = {
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
+            session_token: token,
         };
 
         // Insert into the database
@@ -110,7 +115,11 @@ app.post("/users/login", async (req, res) => {
 
         // Send success login message
         if (isPasswordCorrect) {
-            res.status(200).json({ message: "Successfully logged in" });
+            // Create new token that expires in 1 hour
+            const newToken = jwt.sign({ sub: req.body.email }, process.env.TOKEN_KEY, { expiresIn: 60 * 60 });
+            // Replacing old user token with new token
+            user.token = newToken;
+            res.status(200).json(user);
         } else {
             throw new Error("Wrong password.");
         }
