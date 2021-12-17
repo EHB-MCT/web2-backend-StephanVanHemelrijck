@@ -80,7 +80,7 @@ app.post("/users/register", async (req, res) => {
         const hashedPassword = bcrypt.hashSync(req.body.password, salt);
 
         // Creating token
-        const token = jwt.sign({ sub: req.body.email, password: req.body.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
+        const token = jwt.sign({ sub: req.body.email, password: hashedPassword }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
 
         // Creating user
         let newUser = {
@@ -127,7 +127,7 @@ app.post("/users/login", async (req, res) => {
         // Send success login message
         if (isPasswordCorrect) {
             // Create new token that expires in 1 hour
-            const newToken = jwt.sign({ sub: req.body.email, password: req.body.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
+            const newToken = jwt.sign({ sub: req.body.email, password: user.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
             // Replacing old user token with new token
             user.token = newToken;
             // Updating token in users collection
