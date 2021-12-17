@@ -15,10 +15,6 @@ const port = process.env.PORT;
 app.use(express.static("public"));
 app.use(bodyParser.json());
 app.use(cors());
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    next();
-});
 
 // Replace the following with your Atlas connection string
 const client = new MongoClient(process.env.FINAL_URL);
@@ -151,14 +147,14 @@ app.post("/users/login", async (req, res) => {
     }
 });
 
-// Returns a single user found by username TOKEN REQUIRED
-app.get("/users/:username", auth, async (req, res) => {
+// Returns a single user found by username
+app.get("/users/:username", async (req, res) => {
     try {
         await client.connect();
 
         const col = client.db(dbName).collection("users");
         const user = await col.findOne({ username: req.query.username }, { token: 0 });
-        // No clue why it is not excluding token from user
+        // No clue why it is not excluding token in json
         if (!user) {
             res.status(400).send({ message: `User with name ${req.query.username} does not exist.` });
         } else {
@@ -175,30 +171,32 @@ app.get("/users/:username", auth, async (req, res) => {
     }
 });
 
-// Deletes the currently logged in user TOKEN REQUIRED
-app.delete("/users/delete", auth, async (req, res) => {
+// Delete user by email
+app.delete("/users/:email", async (req, res) => {
     try {
         await client.connect();
 
         const col = client.db(dbName).collection("users");
         // TL;DR
-        // When a user first creates an account or logs in. The rest api will make a token for him
-        // This token will be returned as a json document when making a post register or login call
-        // This token should be stored in a cookie before redirecting the user to the homepage.
-        // User can only delete his own account
+        // //When a user first creates an account or logs in. The rest api will make a token for him
+        // //This token will be returned as a json document when making a post register or login call
+        // //This token should be stored in a cookie before redirecting the user to the homepage.
+        // // User can only delete his own account
+
+        // // // // These comments dont apply yet because I have currently disabled auth tokens
 
         // Determining who the user is for success message handling
-        const deletedUser = await col.findOne({ token: `${req.headers["auth"]}` });
-        // Delete user based on the token given along with the header (Token should be obtained from cookie upon login/registering)
-        // to make sure the user is deleting himself
-        // const deleteUser = await col.deleteOne({ token: `${req.headers["auth"]}` });
-        // if (deleteUser.deletedCount === 1) {
-        //     res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
-        // } else {
-        //     res.status(404).send({ message: `No users founds. Deleted 0 users` });
-        // }
-        console.log("Logging from index.js", req.user);
-        res.status(200).send({ message: "Nice" });
+        const deletedUser = await col.findOne({ email: `${req.query.email}` });
+        // // Delete user based on the token given along with the header (Token should be obtained from cookie upon login/registering)
+        // // to make sure the user is deleting himself
+
+        // Deleting user based on email
+        const deleteUser = await col.deleteOne({ email: `${req.query.email}` });
+        if (deleteUser.deletedCount === 1) {
+            res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
+        } else {
+            res.status(404).send({ message: `No users founds. Deleted 0 users` });
+        }
     } catch (e) {
         console.log(e);
         res.status(500).send({
