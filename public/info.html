@@ -59,14 +59,14 @@
             <div class="mobile-menu-closer"></div>
             <div class="content-menu">
                 <div class="content-infos">
-                    <div class="info"><b>Version:</b> 1.1.0</div>
-                    <div class="info"><b>Last Updated:</b> 15th Dec, 2021</div>
+                    <div class="info"><b>Version:</b> 2.0.0</div>
+                    <div class="info"><b>Last Updated:</b> 17th Dec, 2021</div>
                 </div>
                 <ul>
                     <li class="scroll-to-link active" data-target="content-get-started">
                         <a>Info</a>
                     </li>
-                    <li class="scroll-to-link" data-target="content-get-characters">
+                    <li class="scroll-to-link" data-target="content-get-users">
                         <a>Get Users</a>
                     </li>
                     <li class="scroll-to-link" data-target="content-create-user">
@@ -74,6 +74,12 @@
                     </li>
                     <li class="scroll-to-link" data-target="content-login-user">
                         <a>Login User</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-get-user">
+                        <a>Get Single User</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-delete-user">
+                        <a>Delete User</a>
                     </li>
                 </ul>
             </div>
@@ -87,7 +93,7 @@
                     <p>Make sure to check him out! Much love <3</p>
                     <p>This is a documentation page made for the RoutExplore API created by Stephan Van Hemelrijck.</p>
                 </div>
-                <div class="overflow-hidden content-section" id="content-get-characters">
+                <div class="overflow-hidden content-section" id="content-get-users">
                     <h2>GET users</h2>
                     <p>
                         To get all the users from the database you need to make a GET request to the following url :<br />
@@ -101,7 +107,7 @@
                         <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/register</code>
                     </p>
                     <br />
-                    <h4>QUERY PARAMETERS</h4>
+                    <h4>BODY PARAMETERS</h4>
                     <table>
                         <thead>
                             <tr>
@@ -136,7 +142,7 @@
                         <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/login</code>
                     </p>
                     <br />
-                    <h4>QUERY PARAMETERS</h4>
+                    <h4>BODY PARAMETERS</h4>
                     <table>
                         <thead>
                             <tr>
@@ -152,6 +158,82 @@
                             <tr>
                                 <td>password</td>
                                 <td>String</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-get-user">
+                    <h2>Get a single user</h2>
+                    <p>This GET call will look for a single user in the database with the username provided.</p>
+                    <p>
+                        To get a single user you need to make a GET call to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/:username</code>
+                    </p>
+                    <br />
+                    <h4>HEADER PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>x-access-token</td>
+                                <td>[YOUR_TOKEN]</td>
+                                <td>REQUIRED, this token should be accessed by cookies</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>username</td>
+                                <td>String</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-delete-user">
+                    <h2>Delete user</h2>
+                    <h3>Important</h3>
+                    <p>This DELETE request will delete the user it's own account. It should not be tried to use as regular delete request.</p>
+                    <p>
+                        The way this request works is by identifying the issuer based on the token given in the request header. A user automatically obtains a
+                        token upon account creation or login. <br />
+                        This token will be stored as a cookie in their browser, under the name "token". So in theory you would only be able to delete an account
+                        if you actually had one,<br />
+                        but for the course project's sake, you can also obtain a random token from an existing user by executing a
+                        <span class="scroll-to-link" data-target="content-get-users" style="color: #70b7fd; text-decoration: underline">GET user request</span>.
+                    </p>
+                    <p>
+                        To delete your own user you need to make a DELETE request to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/delete</code>
+                    </p>
+                    <br />
+                    <h4>HEADER PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>x-access-token</td>
+                                <td>[YOUR_TOKEN]</td>
+                                <td>REQUIRED, this token should be accessed by cookies</td>
                             </tr>
                         </tbody>
                     </table>

@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const auth = require("./auth.js");
 
 // Express server stuff
 const app = express();
@@ -46,6 +47,7 @@ app.get("/users", async (req, res) => {
     }
 });
 
+// Returns user json
 app.post("/users/register", async (req, res) => {
     try {
         // Connecting to db
@@ -58,11 +60,18 @@ app.post("/users/register", async (req, res) => {
         if (!req.body.username || !req.body.email || !req.body.password) {
             throw new Error("Bad request. You are either missing a username, email or password");
         }
+        // Checking if username already exists
+        const checkUsername = await col.findOne({
+            username: req.body.username,
+        });
+        if (checkUsername) {
+            throw new Error(`An account with username "${req.body.username}" already exists`);
+        }
         // Checking if email already exists
-        const user = await col.findOne({
+        const checkUserEmail = await col.findOne({
             email: req.body.email,
         });
-        if (user) {
+        if (checkUserEmail) {
             throw new Error(`An account with email "${req.body.email}" already exists`);
         }
 
@@ -78,7 +87,7 @@ app.post("/users/register", async (req, res) => {
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
-            session_token: token,
+            token: token,
         };
 
         // Insert into the database
@@ -95,6 +104,7 @@ app.post("/users/register", async (req, res) => {
     }
 });
 
+// Returns user json
 app.post("/users/login", async (req, res) => {
     try {
         // Connect
@@ -118,7 +128,7 @@ app.post("/users/login", async (req, res) => {
             // Create new token that expires in 1 hour
             const newToken = jwt.sign({ sub: req.body.email, password: req.body.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
             // Replacing old user token with new token
-            user.session_token = newToken;
+            user.token = newToken;
             res.status(200).json(user);
         } else {
             throw new Error("Wrong password.");
@@ -130,6 +140,63 @@ app.post("/users/login", async (req, res) => {
         });
     } finally {
         await client.close;
+    }
+});
+
+// Returns a single user found by username TOKEN REQUIRED
+app.get("/users/:username", auth, async (req, res) => {
+    try {
+        await client.connect();
+
+        const col = client.db(dbName).collection("users");
+        const user = await col.findOne({ username: req.query.username }, { token: 0 });
+        // No clue why it is not excluding token from user
+        if (!user) {
+            res.status(400).send({ message: `User with name ${req.query.username} does not exist.` });
+        } else {
+            res.status(200).send(user);
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            error: e.name,
+            value: e.message,
+        });
+    } finally {
+        await client.close();
+    }
+});
+
+// Deletes the currently logged in user TOKEN REQUIRED
+app.delete("/users/delete", auth, async (req, res) => {
+    try {
+        await client.connect();
+
+        const col = client.db(dbName).collection("users");
+        // TL;DR
+        // When a user first creates an account or logs in. The rest api will make a token for him
+        // This token will be returned as a json document when making a post register or login call
+        // This token should be stored in a cookie before redirecting the user to the homepage.
+        // User can only delete his own account
+
+        // Determining who the user is for success message handling
+        const deletedUser = await col.findOne({ token: `${req.headers["x-access-token"]}` });
+        // Delete user based on the token given along with the header (Token should be obtained from cookie upon login/registering)
+        // to make sure the user is deleting himself
+        const deleteUser = await col.deleteOne({ token: `${req.headers["x-access-token"]}` });
+        if (deleteUser.deletedCount === 1) {
+            res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
+        } else {
+            res.status(404).send({ message: `No users founds. Deleted 0 users` });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            error: e.name,
+            value: e.message,
+        });
+    } finally {
+        await client.close();
     }
 });
 
