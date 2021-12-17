@@ -3,13 +3,13 @@ require("dotenv").config();
 
 const verifyToken = (req, res, next) => {
     const token = req.body.token || req.query.token || req.headers["auth"];
-    console.log("token:\n", token);
+    const newToken = token.substring(1);
 
     if (!token) {
         return res.status(403).send({ message: "A token is required for authentication" });
     }
     try {
-        const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+        const decoded = jwt.verify(newToken, process.env.TOKEN_KEY);
         console.log("decoded", decoded);
         req.user = decoded;
     } catch (err) {

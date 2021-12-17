@@ -192,11 +192,13 @@ app.delete("/users/delete", auth, async (req, res) => {
         // Delete user based on the token given along with the header (Token should be obtained from cookie upon login/registering)
         // to make sure the user is deleting himself
         // const deleteUser = await col.deleteOne({ token: `${req.headers["auth"]}` });
-        if (deleteUser.deletedCount === 1) {
-            res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
-        } else {
-            res.status(404).send({ message: `No users founds. Deleted 0 users` });
-        }
+        // if (deleteUser.deletedCount === 1) {
+        //     res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
+        // } else {
+        //     res.status(404).send({ message: `No users founds. Deleted 0 users` });
+        // }
+        console.log("Logging from index.js", req.user);
+        res.status(200).send({ message: "Nice" });
     } catch (e) {
         console.log(e);
         res.status(500).send({
