@@ -59,7 +59,7 @@
             <div class="mobile-menu-closer"></div>
             <div class="content-menu">
                 <div class="content-infos">
-                    <div class="info"><b>Version:</b> 2.0.0</div>
+                    <div class="info"><b>Version:</b> 2.0.1</div>
                     <div class="info"><b>Last Updated:</b> 17th Dec, 2021</div>
                 </div>
                 <ul>
@@ -103,6 +103,9 @@
                 <div class="overflow-hidden content-section" id="content-create-user">
                     <h2>Register user</h2>
                     <p>
+                        Adviced to create a cookie to store the user info in. Read more about
+                        <a href="https://javascript.info/cookie" target="_blank" rel="noopener noreferrer" style="text-decoration: underline">cookies</a
+                        ><br /><br />
                         To create a new user and insert him into the database you need to make a POST call to the following url :<br />
                         <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/register</code>
                     </p>
@@ -134,6 +137,9 @@
                 <div class="overflow-hidden content-section" id="content-login-user">
                     <h2>Login user</h2>
                     <p>
+                        Adviced to create a cookie to store the user info in. Read more about
+                        <a href="https://javascript.info/cookie" target="_blank" rel="noopener noreferrer" style="text-decoration: underline">cookies</a
+                        ><br /><br />
                         This POST call will look for an account in the database with the email provided. If that account exists, then it will check if the
                         password given matches the password stored in the database.
                     </p>
@@ -170,23 +176,6 @@
                         <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/:username</code>
                     </p>
                     <br />
-                    <h4>HEADER PARAMETERS</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>x-access-token</td>
-                                <td>[YOUR_TOKEN]</td>
-                                <td>REQUIRED, this token should be accessed by cookies</td>
-                            </tr>
-                        </tbody>
-                    </table>
                     <h4>QUERY PARAMETERS</h4>
                     <table>
                         <thead>
@@ -205,18 +194,21 @@
                 </div>
                 <div class="overflow-hidden content-section" id="content-delete-user">
                     <h2>Delete user</h2>
-                    <h3>Important</h3>
-                    <p>This DELETE request will delete the user it's own account. It should not be tried to use as regular delete request.</p>
                     <p>
-                        The way this request works is by identifying the issuer based on the token given in the request header. A user automatically obtains a
-                        token upon account creation or login. <br />
-                        This token will be stored as a cookie in their browser, under the name "token". So in theory you would only be able to delete an account
-                        if you actually had one,<br />
-                        but for the course project's sake, you can also obtain a random token from an existing user by executing a
+                        This DELETE request will delete any user that matches the query parameter. If you want to find all the users in the database, you can do
+                        so by doing a regular
                         <span class="scroll-to-link" data-target="content-get-users" style="color: #70b7fd; text-decoration: underline">GET user request</span>.
+                        <br /><br />
+                        For this course project sake, there is no authentication required, so anyone could delete anyone. However if this request is being
+                        called in the client side environment by a regular user, <br />
+                        I would recommend to fill the query parameter with the email of the user currently logged in on your client. Use of cookies would be a
+                        great way of keeping track of this. See
+                        <span class="scroll-to-link" data-target="content-login-user" style="color: #70b7fd; text-decoration: underline">LOGIN USER</span> or
+                        <span class="scroll-to-link" data-target="content-create-user" style="color: #70b7fd; text-decoration: underline">REGISTER USER</span>
+                        for more info.
                     </p>
                     <p>
-                        To delete your own user you need to make a DELETE request to the following url :<br />
+                        To delete a user you need to make a DELETE request to the following url :<br />
                         <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/delete</code>
                     </p>
                     <br />
@@ -226,14 +218,12 @@
                             <tr>
                                 <th>Field</th>
                                 <th>Type</th>
-                                <th>Description</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>x-access-token</td>
-                                <td>[YOUR_TOKEN]</td>
-                                <td>REQUIRED, this token should be accessed by cookies</td>
+                                <td>email</td>
+                                <td>string</td>
                             </tr>
                         </tbody>
                     </table>
