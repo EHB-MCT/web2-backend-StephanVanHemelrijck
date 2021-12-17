@@ -15,6 +15,10 @@ const port = process.env.PORT;
 app.use(express.static("public"));
 app.use(bodyParser.json());
 app.use(cors());
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    next();
+});
 
 // Replace the following with your Atlas connection string
 const client = new MongoClient(process.env.FINAL_URL);
