@@ -87,6 +87,7 @@ app.post("/users/register", async (req, res) => {
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
+            createdAt: new Date(),
             token: token,
         };
 
@@ -130,7 +131,8 @@ app.post("/users/login", async (req, res) => {
             // Replacing old user token with new token
             user.token = newToken;
             // Updating token in users collection
-            const updatedUser = await col.updateOne({ email: req.body.email }, { $set: { token: `${newToken}` } });
+            const updatedUser = await col.updateOne({ email: req.body.email }, { $set: { token: newToken } });
+            console.log(user.token);
             res.status(200).json(user);
         } else {
             throw new Error("Wrong password.");
