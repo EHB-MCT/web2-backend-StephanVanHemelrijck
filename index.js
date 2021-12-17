@@ -15,6 +15,10 @@ const port = process.env.PORT;
 app.use(express.static("public"));
 app.use(bodyParser.json());
 app.use(cors());
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    next();
+});
 
 // Replace the following with your Atlas connection string
 const client = new MongoClient(process.env.FINAL_URL);
@@ -172,7 +176,7 @@ app.get("/users/:username", auth, async (req, res) => {
 });
 
 // Deletes the currently logged in user TOKEN REQUIRED
-app.delete("/users/delete", async (req, res) => {
+app.delete("/users/delete", auth, async (req, res) => {
     try {
         await client.connect();
 
@@ -184,16 +188,15 @@ app.delete("/users/delete", async (req, res) => {
         // User can only delete his own account
 
         // Determining who the user is for success message handling
-        const deletedUser = await col.findOne({ token: `${req.headers["x-access-token"]}` });
+        const deletedUser = await col.findOne({ token: `${req.headers["auth"]}` });
         // Delete user based on the token given along with the header (Token should be obtained from cookie upon login/registering)
         // to make sure the user is deleting himself
-        // const deleteUser = await col.deleteOne({ token: `${req.headers["x-access-token"]}` });
-        // if (deleteUser.deletedCount === 1) {
-        //     res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
-        // } else {
-        //     res.status(404).send({ message: `No users founds. Deleted 0 users` });
-        // }
-        res.status(200).send({ message: "Hello" });
+        // const deleteUser = await col.deleteOne({ token: `${req.headers["auth"]}` });
+        if (deleteUser.deletedCount === 1) {
+            res.status(200).send({ message: `User ${deletedUser.username} successfully deleted` });
+        } else {
+            res.status(404).send({ message: `No users founds. Deleted 0 users` });
+        }
     } catch (e) {
         console.log(e);
         res.status(500).send({
