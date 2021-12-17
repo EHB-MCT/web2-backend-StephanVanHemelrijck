@@ -129,6 +129,8 @@ app.post("/users/login", async (req, res) => {
             const newToken = jwt.sign({ sub: req.body.email, password: req.body.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
             // Replacing old user token with new token
             user.token = newToken;
+            // Updating token in users collection
+            const updatedUser = await col.updateOne({ email: req.body.email }, { $set: { token: `${newToken}` } });
             res.status(200).json(user);
         } else {
             throw new Error("Wrong password.");
