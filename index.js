@@ -208,6 +208,59 @@ app.delete("/users/:email", async (req, res) => {
     }
 });
 
+app.get("/routes", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const col = client.db(dbName).collection("routes");
+        const routes = await col.find({}).toArray();
+        // Send back the file
+        res.status(200).send(routes);
+    } catch (e) {
+        res.status(500).send({
+            error: "Could not retrieve all routes",
+            value: e,
+        });
+    } finally {
+        await client.close;
+    }
+});
+
+app.post("/routes", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const col = client.db(dbName).collection("routes");
+
+        // Validation;
+        if (!req.body.created_by || !req.body.route_coordinates || !req.body.route_img_url || !req.body.route_name || !req.body.route_polyline_encoded) {
+            throw new Error(
+                "Make sure you have all parameters filled in. Needs a 'created_by', 'route_coordinates','route_img_url', 'route_name' and 'route_polyline_encoded'"
+            );
+        }
+
+        // Create the file
+        const newRoute = {
+            created_by: req.body.created_by,
+            route_name: req.body.route_name,
+            route_coordinates: req.body.route_coordinates,
+            route_polyline_encoded: req.body.route_polyline_encoded,
+            route_img_url: req.body.route_img_url,
+        };
+
+        // Push file to collection
+        await col.insertOne(newRoute);
+
+        // // Send back file
+        res.status(200).send(newRoute);
+    } catch (e) {
+        res.status(500).send({
+            error: e.message,
+            value: e,
+        });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Api is running at https://localhost:${port}`);
 });
