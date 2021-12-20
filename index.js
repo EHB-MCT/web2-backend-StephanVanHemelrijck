@@ -11,11 +11,6 @@ const auth = require("./auth.js");
 const app = express();
 const port = process.env.PORT;
 
-// Middleware
-app.use(express.static("public"));
-app.use(bodyParser.json());
-app.use(cors());
-
 // Increasing payload size
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(
@@ -32,24 +27,10 @@ const client = new MongoClient(process.env.FINAL_URL);
 // The database to use
 const dbName = process.env.DBNAME;
 
-// Add headers before the routes are defined
-app.use(function (req, res, next) {
-    // Website you wish to allow to connect
-    res.setHeader("Access-Control-Allow-Origin", ["*"]);
-
-    // Request methods you wish to allow
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-
-    // Request headers you wish to allow
-    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader("Access-Control-Allow-Credentials", true);
-
-    // Pass to next layer of middleware
-    next();
-});
+// Middleware
+app.use(express.static("public"));
+app.use(bodyParser.json());
+app.use(cors());
 
 // Root route
 app.get("/", (req, res) => {
@@ -278,7 +259,7 @@ app.post("/routes", async (req, res) => {
         };
 
         // Push file to collection
-        await col.insertOne(newRoute);
+        let insert = await col.insertOne(newRoute);
 
         // // Send back file
         res.status(200).send(newRoute);
