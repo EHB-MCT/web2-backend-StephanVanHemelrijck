@@ -243,7 +243,14 @@ app.post("/routes", async (req, res) => {
         const col = client.db(dbName).collection("routes");
 
         // Validation;
-        if (!req.body.created_by || !req.body.route_coordinates || !req.body.route_img_url || !req.body.route_name || !req.body.route_polyline_encoded) {
+        if (
+            !req.body.created_by ||
+            !req.body.route_start_location ||
+            !req.body.route_coordinates ||
+            !req.body.route_img_url ||
+            !req.body.route_name ||
+            !req.body.route_polyline_encoded
+        ) {
             throw new Error(
                 "Make sure you have all parameters filled in. Needs a 'created_by', 'route_coordinates','route_img_url', 'route_name' and 'route_polyline_encoded'"
             );
@@ -253,6 +260,7 @@ app.post("/routes", async (req, res) => {
         const newRoute = {
             created_by: req.body.created_by,
             route_name: req.body.route_name,
+            route_start_location: req.body.route_start_location,
             route_coordinates: req.body.route_coordinates,
             route_polyline_encoded: req.body.route_polyline_encoded,
             route_img_url: req.body.route_img_url,
