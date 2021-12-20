@@ -16,6 +16,16 @@ app.use(express.static("public"));
 app.use(bodyParser.json());
 app.use(cors());
 
+// Increasing payload size
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(
+    bodyParser.urlencoded({
+        limit: "50mb",
+        extended: true,
+        parameterLimit: 50000,
+    })
+);
+
 // Replace the following with your Atlas connection string
 const client = new MongoClient(process.env.FINAL_URL);
 
