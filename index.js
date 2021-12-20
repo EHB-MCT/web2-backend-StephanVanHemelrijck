@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, TopologyOpeningEvent } = require("mongodb");
 const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
@@ -185,7 +185,6 @@ app.get("/users/:username", async (req, res) => {
 app.delete("/users/:email", async (req, res) => {
     try {
         await client.connect();
-
         const col = client.db(dbName).collection("users");
         // TL;DR
         // //When a user first creates an account or logs in. The rest api will make a token for him
@@ -218,6 +217,7 @@ app.delete("/users/:email", async (req, res) => {
     }
 });
 
+// Get all routes
 app.get("/routes", async (req, res) => {
     try {
         // Connect
@@ -236,6 +236,75 @@ app.get("/routes", async (req, res) => {
     }
 });
 
+// Get routes by city
+app.get("/routes/city/:city", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const col = client.db(dbName).collection("routes");
+        // Validation
+        if (!req.query.city) {
+            throw new Error("Please provide a city");
+        }
+        // Making input lowercase
+        const str = req.query.city.toLowerCase();
+        // Making 1st character a capital
+        const city = str.charAt(0).toUpperCase() + str.slice(1);
+        // Find routes
+        const routes = await col.find({ "route_start_location.city": city }).toArray();
+        if (!routes || routes.length == 0) {
+            throw new Error(`No routes with the name ${req.query.city} found. Make sure the given city exists`);
+        }
+        // Send back the file
+        res.status(200).send(routes);
+    } catch (e) {
+        res.status(500).send({
+            error: "Could not retrieve all routes",
+            value: e.message,
+        });
+    } finally {
+        await client.close;
+    }
+});
+
+// Getting routes for an user based on their email (stored in cookie)
+app.get("/routes/user", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        // Routes col
+        const colR = client.db(dbName).collection("routes");
+        // User Col
+        const colU = client.db(dbName).collection("users");
+        // Validation
+        if (!req.body.email) {
+            throw new Error("Please provide an email in the body");
+        }
+        // Assigning user with the given email
+        const user = await colU.findOne({ email: req.body.email });
+        if (!user) {
+            throw new Erorr(`User with email ${req.body.email} does not exist.`);
+        }
+
+        // Getting routes made by the user
+        const routes = await colR.find({ created_by: user.username }).toArray();
+        if (!routes) {
+            throw new Error("Routes is empty");
+        }
+
+        res.status(200).send(routes);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            error: "Something went wrong...",
+            value: e.message,
+        });
+    } finally {
+        await client.close();
+    }
+});
+
+// Create new routes
 app.post("/routes", async (req, res) => {
     try {
         // Connect
@@ -255,10 +324,14 @@ app.post("/routes", async (req, res) => {
                 "Make sure you have all parameters filled in. Needs a 'created_by', 'route_coordinates','route_img_url', 'route_name' and 'route_polyline_encoded'"
             );
         }
+        // Randomize id with 9 digits
+        const id = Math.floor(Math.random() * 1000000000);
+        const strId = id.toString();
 
         // Create the file
         const newRoute = {
             created_by: req.body.created_by,
+            route_id: strId,
             route_name: req.body.route_name,
             route_start_location: req.body.route_start_location,
             route_coordinates: req.body.route_coordinates,
@@ -276,9 +349,74 @@ app.post("/routes", async (req, res) => {
             error: e.message,
             value: e,
         });
+    } finally {
+        await client.close();
+    }
+});
+
+// Delete route by id
+app.delete("/routes/id/:id", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const col = client.db(dbName).collection("routes");
+        console.log(req.query.id);
+        // Validation
+        if (!req.query.id) {
+            throw new Error("Please provide an id");
+        }
+
+        // Doing this for success message handling
+        const route = await col.findOne({ route_id: req.query.id });
+        // Actually deleting
+        const deletedRoute = await col.deleteOne({ route_id: req.query.id });
+        console.log(deletedRoute);
+        // Deleting user based on email
+        if (deletedRoute.deletedCount === 1) {
+            res.status(200).send({ message: `Route with the name: ${route.route_name} successfully deleted` });
+        } else {
+            res.status(404).send({ message: `No routes with id ${req.query.id} found. Deleted 0 routes` });
+        }
+    } catch (e) {
+        res.status(500).send({
+            error: e.message,
+        });
+    } finally {
+        await client.close();
+    }
+});
+
+// Should only be used to clear all data, this action is irreversible
+app.delete("/routes/all", async (req, res) => {
+    try {
+        await client.connect();
+        const col = client.db(dbName).collection("routes");
+        // Validation
+        if (!req.query.deleteKey) {
+            throw new Error("Please provide a delete key");
+        }
+
+        // Adding authorization
+        if (process.env.DELETEKEY != req.query.deleteKey) {
+            res.status(413).send("Not authorized.");
+        }
+
+        // If key is given and matches
+        if (process.env.DELETEKEY == req.query.deleteKey) {
+            await col.deleteMany({});
+            res.status(200).send("Deleted all routes");
+        } else {
+            throw new Error("Something went wrong, please try again later..");
+        }
+    } catch (e) {
+        res.status(500).send({
+            error: e.message,
+        });
+    } finally {
+        await client.close();
     }
 });
 
 app.listen(port, () => {
-    console.log(`Api is running at https://localhost:${port}`);
+    console.log(`Api is running at http://localhost:${port}`);
 });
