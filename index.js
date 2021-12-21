@@ -243,7 +243,7 @@ app.get("/routes", async (req, res) => {
 });
 
 // Get route by route id
-app.get("/routes/:id", async (req, res) => {
+app.get("/routes/:route_id", async (req, res) => {
     try {
         // Connect
         await client.connect();
