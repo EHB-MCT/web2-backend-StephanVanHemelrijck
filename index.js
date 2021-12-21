@@ -552,32 +552,25 @@ app.delete("/routes/favorite_routes/:route_id", async (req, res) => {
 
         // Determining the user to delete the favorite route from
         // Validation for user
-        console.log("test");
         if (!req.body.user_id) {
             throw new Error("Please provide a user_id in the body");
         }
         // Finding user
-        console.log("2");
         const user = await colU.findOne({ user_id: req.body.user_id });
         // Not found
-        console.log("3");
         if (!user) {
             throw new Error(`No user with id ${req.body.user_id} found`);
         }
-        console.log("4");
         // Validation for favorite route
         if (!req.query.route_id) {
             throw new Error("Please provide a route_id in the query");
         }
-        console.log("5");
         // Finding route
         const route = await colFR.findOne({ route_id: req.query.route_id });
         // Not found
-        console.log("6");
         if (!route) {
             throw new Error(`No route with id ${req.query.route_id} found`);
         }
-        console.log("7");
         // Deleting from favorites
         const deletedRoute = await colFR.deleteOne({ $and: [{ route_id: route.route_id }, { user_id: user.user_id }] });
         if (deletedRoute.deletedCount === 1) {
