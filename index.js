@@ -394,7 +394,7 @@ app.delete("/routes/id/:id", async (req, res) => {
         // Actually deleting
         const deletedRoute = await col.deleteOne({ route_id: req.query.id });
         // Deleting the route from the favorite collections aswell
-        const deleteFavRoute = await col.deleteOne({ route_id: req.query.id });
+        const deleteFavRoute = await colFR.deleteOne({ route_id: req.query.id });
         // Deleting user based on email
         if (deletedRoute.deletedCount === 1) {
             res.status(200).send({ message: `Route with the name: ${route.route_name} successfully deleted` });
