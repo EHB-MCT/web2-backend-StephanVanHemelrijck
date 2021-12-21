@@ -37,6 +37,10 @@ app.get("/", (req, res) => {
     res.status(300).redirect("/info.html");
 });
 
+//////////////////////////////////////////////////////////////////////////////////
+///                                   USERS                                    ///
+//////////////////////////////////////////////////////////////////////////////////
+
 app.get("/users", async (req, res) => {
     try {
         // Connecting to db
@@ -94,6 +98,7 @@ app.post("/users/register", async (req, res) => {
 
         // Creating user
         let newUser = {
+            user_id: Math.floor(Math.random() * 1000000000).toString(), // Assign random 9 digit number and convert to string to store in db
             username: req.body.username,
             email: req.body.email,
             password: hashedPassword,
@@ -216,6 +221,10 @@ app.delete("/users/:email", async (req, res) => {
         await client.close();
     }
 });
+
+//////////////////////////////////////////////////////////////////////////////////
+///                                 ROUTES                                     ///
+//////////////////////////////////////////////////////////////////////////////////
 
 // Get all routes
 app.get("/routes", async (req, res) => {
@@ -414,6 +423,102 @@ app.delete("/routes/all", async (req, res) => {
         });
     } finally {
         await client.close();
+    }
+});
+
+//////////////////////////////////////////////////////////////////////////////////
+///                              FAVORITE ROUTES                               ///
+//////////////////////////////////////////////////////////////////////////////////
+
+// Get favorite_routes linked to a user_id
+app.get("/routes/favorite_routes/:id", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const colU = client.db(dbName).collection("users");
+        const colR = client.db(dbName).collection("routes");
+        const colFR = client.db(dbName).collection("favorite_routes");
+
+        // Validation
+        if (!req.query.id) {
+            throw new Error("Please pass along a user_id in the query.");
+        }
+        // Get the user requesting his favorite routes
+        const user = await colU.findOne({ user_id: req.query.id });
+
+        // Look for favorite routes for user
+        const favorite_route = await colFR.find({ user_id: req.query.id }).toArray();
+
+        // If user doesn't have any favorite routes
+        if (favorite_route.length == 0) {
+            throw new Error(`${user.username} does not have any favorite routes.`);
+        }
+
+        res.status(200).send(favorite_route);
+    } catch (e) {
+        res.status(500).send({
+            error: "Something went wrong, please try again later...",
+            value: e.message,
+        });
+    } finally {
+        await client.close();
+    }
+});
+
+app.post("/routes/favorite_routes/:route_id", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const colU = client.db(dbName).collection("users");
+        const colR = client.db(dbName).collection("routes");
+        const colFR = client.db(dbName).collection("favorite_routes");
+
+        // Validation for route id in query
+        if (!req.query.route_id) {
+            throw new Error("Please provide a route_id in the query");
+        }
+        // Validation for user_id in body
+        if (!req.body.user_id) {
+            throw new Error("Please provide a user_id in the body");
+        }
+        // Find route linked to the route_id to get the route_name
+        const route = await colR.findOne({ route_id: req.query.route_id });
+        if (!route) {
+            throw new Error(`There are no routes with the id: ${req.query.route_id}`);
+        }
+        // Find user linked to the user_id to get the username
+        const user = await colU.findOne({ user_id: req.body.user_id });
+        if (!user) {
+            throw new Error(`There are no users with the id: ${req.query.user_id}`);
+        }
+
+        const favorite_route = {
+            route_name: route.route_name,
+            user_id: req.body.user_id,
+            route_id: req.query.route_id,
+            username: user.username,
+        };
+
+        // Validate to see if there are undefined variables in our favorite_route object
+        if (!favorite_route.route_name || !favorite_route.user_id || !favorite_route.route_id || !favorite_route.username) {
+            throw new Error("One of the required fields inside object favorite_route is undefined");
+        }
+
+        // Validate for duplicates
+        const stored_favorite_route = await colFR.findOne({ user_id: req.body.user_id, route_id: req.query.route_id });
+        if (stored_favorite_route) {
+            throw new Error("You already have this route saved as your favorite.");
+        }
+
+        await colFR.insertOne(favorite_route);
+
+        res.status(200).send(favorite_route);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            error: "Something went wrong, please try again later...",
+            value: e.message,
+        });
     }
 });
 
