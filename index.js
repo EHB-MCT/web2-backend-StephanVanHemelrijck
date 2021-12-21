@@ -277,7 +277,7 @@ app.get("/routes/city/:city", async (req, res) => {
 });
 
 // Getting routes for an user based on their email (stored in cookie)
-app.get("/routes/user", async (req, res) => {
+app.get("/routes/user/:id", async (req, res) => {
     try {
         // Connect
         await client.connect();
@@ -286,19 +286,19 @@ app.get("/routes/user", async (req, res) => {
         // User Col
         const colU = client.db(dbName).collection("users");
         // Validation
-        if (!req.body.email) {
+        if (!req.query.id) {
             throw new Error("Please provide an email in the body");
         }
         // Assigning user with the given email
-        const user = await colU.findOne({ email: req.body.email });
+        const user = await colU.findOne({ user_id: req.query.id });
         if (!user) {
-            throw new Erorr(`User with email ${req.body.email} does not exist.`);
+            throw new Erorr(`User with id ${req.query.id} does not exist.`);
         }
 
         // Getting routes made by the user
         const routes = await colR.find({ created_by: user.username }).toArray();
         if (!routes) {
-            throw new Error("Routes is empty");
+            throw new Error("You don't have any routes.");
         }
 
         res.status(200).send(routes);
