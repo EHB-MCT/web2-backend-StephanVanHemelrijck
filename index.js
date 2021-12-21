@@ -71,7 +71,7 @@ app.post("/users/register", async (req, res) => {
 
         // Validation
         // Checking if input fields are empty
-        if (!req.body.username || !req.body.email || !req.body.password) {
+        if (!req.body.username || !req.body.email || !req.body.password || !req.body.security_question || !req.body.security_question_answer) {
             throw new Error("Bad request. You are either missing a username, email or password");
         }
         // Checking if username already exists
@@ -96,12 +96,18 @@ app.post("/users/register", async (req, res) => {
         // Creating token
         const token = jwt.sign({ sub: req.body.email, password: hashedPassword }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
 
+        // Formatting strings to lowercase
+        const email = req.body.email.toLowerCase();
+        const sec_answer = req.body.security_question_answer.toLowerCase();
+
         // Creating user
         let newUser = {
             user_id: Math.floor(Math.random() * 1000000000).toString(), // Assign random 9 digit number and convert to string to store in db
             username: req.body.username,
-            email: req.body.email,
+            email: email,
             password: hashedPassword,
+            security_question: req.body.security_question,
+            security_question_answer: sec_answer,
             createdAt: new Date(),
             token: token,
         };
@@ -131,8 +137,10 @@ app.post("/users/login", async (req, res) => {
         if (!req.body.email || !req.body.password) {
             throw new Error("Missing email or password in body.");
         }
+        // Formatting email to lowercase
+        const email = req.body.email.toLowerCase();
         // Look for account with given email
-        const user = await col.findOne({ email: req.body.email });
+        const user = await col.findOne({ email: email });
         if (!user) {
             throw new Error("Account with this e-mail does not exist.");
         }
@@ -142,11 +150,11 @@ app.post("/users/login", async (req, res) => {
         // Send success login message
         if (isPasswordCorrect) {
             // Create new token that expires in 1 hour
-            const newToken = jwt.sign({ sub: req.body.email, password: user.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
+            const newToken = jwt.sign({ sub: email, password: user.password }, `${process.env.TOKEN_KEY}`, { expiresIn: 60 * 60 });
             // Replacing old user token with new token
             user.token = newToken;
             // Updating token in users collection
-            const updatedUser = await col.updateOne({ email: req.body.email }, { $set: { token: newToken } });
+            const updatedUser = await col.updateOne({ email: email }, { $set: { token: newToken } });
             res.status(200).json(user);
         } else {
             throw new Error("Wrong password.");
@@ -607,6 +615,75 @@ app.delete("/routes/favorite_routes/:route_id", async (req, res) => {
             error: "Something went wrong, please try again later...",
             value: e.message,
         });
+    } finally {
+        await client.close();
+    }
+});
+
+//////////////////////////////////////////////////////////////////////////////////
+///                               RESET PASSWORD                               ///
+//////////////////////////////////////////////////////////////////////////////////
+
+app.put("/users/password/reset", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const col = client.db(dbName).collection("users");
+
+        // Validation || Requires
+        if (!req.body.email || !req.body.security_question_answer || !req.body.new_password || !req.body.new_password_confirm) {
+            throw new Error(
+                "You are missing one of the following items in your request body: Email / Password / Confirmed Password or Security Question Answer"
+            );
+        }
+
+        // Finding user
+        const user = await col.findOne({ email: req.body.email });
+
+        // Not found
+        if (!user) {
+            throw new Error(`User with ${req.body.email} does not exist`);
+        }
+        // Out the if-scope for later use
+        let hash;
+        // Comparing passwords
+        if (req.body.new_password == req.body.new_password_confirm) {
+            // Hashing password
+            const salt = bcrypt.genSaltSync(10);
+            hash = bcrypt.hashSync(req.body.new_password, salt);
+        } else {
+            throw new Error("Passwords do not match.");
+        }
+
+        // Formatting security question answer to lower case
+        const sec_answer = req.body.security_question_answer.toLowerCase();
+
+        // Check security question
+        if (sec_answer != user.security_question_answer) {
+            throw new Error("You answered the security question incorrect.");
+        }
+        const query = {
+            email: req.body.email,
+        };
+
+        const updatedUser = {
+            $set: {
+                password: hash,
+            },
+        };
+
+        // Updating the user
+        const newUser = await col.updateOne(query, updatedUser, { upsert: false });
+
+        if (newUser.matchedCount == 1) {
+            res.status(200).send({ message: "Succesfully changed password" });
+        } else {
+            throw new Error("Could not reset password");
+        }
+
+        // Send back
+        res.status(200).send(newUser);
+    } catch (e) {
     } finally {
         await client.close();
     }
