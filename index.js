@@ -1,4 +1,4 @@
-const { MongoClient, TopologyOpeningEvent } = require("mongodb");
+const { MongoClient } = require("mongodb");
 const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
@@ -197,6 +197,8 @@ app.delete("/users/:email", async (req, res) => {
     try {
         await client.connect();
         const col = client.db(dbName).collection("users");
+        const colR = client.db(dbName).collection("routes");
+        const colFR = client.db(dbName).collection("favorite_routes");
         // TL;DR
         // //When a user first creates an account or logs in. The rest api will make a token for him
         // //This token will be returned as a json document when making a post register or login call
@@ -209,6 +211,11 @@ app.delete("/users/:email", async (req, res) => {
         const deletedUser = await col.findOne({ email: `${req.query.email}` });
         // // Delete user based on the token given along with the header (Token should be obtained from cookie upon login/registering)
         // // to make sure the user is deleting himself
+
+        // Deleting routes for that user (fav and normal)
+        const route = await colR.find({ user_id: deletedUser.user_id });
+        const deleteRoutes = await colR.deleteMany({ created_by: deletedUser.username });
+        const deleteFavRoutes = await colFR.deleteMany({ user_id: deletedUser.user_id });
 
         // Deleting user based on email
         const deleteUser = await col.deleteOne({ email: `${req.query.email}` });
@@ -456,7 +463,7 @@ app.delete("/routes/all", async (req, res) => {
 
         // Adding authorization
         if (process.env.DELETEKEY != req.query.deleteKey) {
-            res.status(413).send("Not authorized.");
+            res.status(403).send("Not authorized.");
         }
 
         // If key is given and matches
