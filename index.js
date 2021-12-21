@@ -147,7 +147,6 @@ app.post("/users/login", async (req, res) => {
             user.token = newToken;
             // Updating token in users collection
             const updatedUser = await col.updateOne({ email: req.body.email }, { $set: { token: newToken } });
-            console.log(user.token);
             res.status(200).json(user);
         } else {
             throw new Error("Wrong password.");
@@ -176,7 +175,6 @@ app.get("/users/:username", async (req, res) => {
             res.status(200).send(user);
         }
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: e.name,
             value: e.message,
@@ -212,7 +210,6 @@ app.delete("/users/:email", async (req, res) => {
             res.status(404).send({ message: `No users founds. Deleted 0 users` });
         }
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: e.name,
             value: e.message,
@@ -239,6 +236,37 @@ app.get("/routes", async (req, res) => {
         res.status(500).send({
             error: "Could not retrieve all routes",
             value: e,
+        });
+    } finally {
+        await client.close;
+    }
+});
+
+// Get route by route id
+app.get("/routes/:id", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const colR = client.db(dbName).collection("routes");
+
+        // Validation
+        if (!req.query.route_id) {
+            throw new Error("Please provide a route_id in the query.");
+        }
+
+        // Find route
+        const route = await colR.findOne({ route_id: req.query.route_id });
+
+        // Not found
+        if (!route) {
+            throw new Error(`Route with id ${req.query.route_id} not found.`);
+        }
+        // Send file back
+        res.status(200).send(route);
+    } catch (e) {
+        res.status(500).send({
+            error: "Could not retrieve all routes",
+            value: e.message,
         });
     } finally {
         await client.close;
@@ -280,7 +308,6 @@ app.get("/routes/city/:city", async (req, res) => {
         // Send back the file
         res.status(200).send(routes);
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: "Could not retrieve all routes",
             value: e.message,
@@ -317,7 +344,6 @@ app.get("/routes/user/:id", async (req, res) => {
 
         res.status(200).send(routes);
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: "Something went wrong...",
             value: e.message,
@@ -384,7 +410,6 @@ app.delete("/routes/id/:id", async (req, res) => {
         await client.connect();
         const col = client.db(dbName).collection("routes");
         const colFR = client.db(dbName).collection("favorite_routes");
-        console.log(req.query.id);
         // Validation
         if (!req.query.id) {
             throw new Error("Please provide an id");
@@ -532,7 +557,6 @@ app.post("/routes/favorite_routes/:route_id", async (req, res) => {
 
         res.status(200).send(favorite_route);
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: "Something went wrong, please try again later...",
             value: e.message,
@@ -579,7 +603,6 @@ app.delete("/routes/favorite_routes/:route_id", async (req, res) => {
             res.status(404).send({ message: `No routes with id ${req.query.id} found. Deleted 0 routes` });
         }
     } catch (e) {
-        console.log(e);
         res.status(500).send({
             error: "Something went wrong, please try again later...",
             value: e.message,
