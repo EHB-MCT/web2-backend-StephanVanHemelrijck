@@ -287,7 +287,7 @@ app.get("/routes/user/:id", async (req, res) => {
         const colU = client.db(dbName).collection("users");
         // Validation
         if (!req.query.id) {
-            throw new Error("Please provide an email in the body");
+            throw new Error("Please provide a user id in the query");
         }
         // Assigning user with the given email
         const user = await colU.findOne({ user_id: req.query.id });
