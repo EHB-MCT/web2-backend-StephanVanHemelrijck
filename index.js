@@ -245,12 +245,13 @@ app.get("/routes", async (req, res) => {
     }
 });
 
-// Get routes by city
+// Get routes by city || Optional parameter user_id
 app.get("/routes/city/:city", async (req, res) => {
     try {
         // Connect
         await client.connect();
-        const col = client.db(dbName).collection("routes");
+        const colU = client.db(dbName).collection("users");
+        const colR = client.db(dbName).collection("routes");
         // Validation
         if (!req.query.city) {
             throw new Error("Please provide a city");
@@ -259,14 +260,27 @@ app.get("/routes/city/:city", async (req, res) => {
         const str = req.query.city.toLowerCase();
         // Making 1st character a capital
         const city = str.charAt(0).toUpperCase() + str.slice(1);
-        // Find routes
-        const routes = await col.find({ "route_start_location.city": city }).toArray();
-        if (!routes || routes.length == 0) {
-            throw new Error(`No routes with the name ${req.query.city} found. Make sure the given city exists`);
+        // Assign user if there is a user_id passed along in the query
+        let routes;
+        if (req.query.user_id) {
+            const user = await colU.findOne({ user_id: req.query.user_id });
+            if (!user) {
+                throw new Error(`No user with the id ${req.query.user_id} found.`);
+            }
+            // Find route for user
+            routes = await colR.find({ $and: [{ "route_start_location.city": city, created_by: user.username }] }).toArray();
+            if (!routes || routes.length == 0) {
+                throw new Error(`No routes in ${city} for ${user.username} found.`);
+            }
+        } else {
+            // Find route for city || Route can be made by anyone
+            routes = await colR.find({ "route_start_location.city": city }).toArray();
         }
+
         // Send back the file
         res.status(200).send(routes);
     } catch (e) {
+        console.log(e);
         res.status(500).send({
             error: "Could not retrieve all routes",
             value: e.message,
