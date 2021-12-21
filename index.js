@@ -508,8 +508,8 @@ app.post("/routes/favorite_routes/:route_id", async (req, res) => {
 
         const favorite_route = {
             route_name: route.route_name,
-            user_id: req.body.user_id,
             route_id: req.query.route_id,
+            user_id: req.body.user_id,
             username: user.username,
         };
 
