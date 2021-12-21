@@ -415,6 +415,7 @@ app.delete("/routes/all", async (req, res) => {
     try {
         await client.connect();
         const col = client.db(dbName).collection("routes");
+        const colFR = client.db(dbName).collection("favorite_routes");
         // Validation
         if (!req.query.deleteKey) {
             throw new Error("Please provide a delete key");
@@ -428,6 +429,7 @@ app.delete("/routes/all", async (req, res) => {
         // If key is given and matches
         if (process.env.DELETEKEY == req.query.deleteKey) {
             await col.deleteMany({});
+            await colFR.deleteMany({});
             res.status(200).send("Deleted all routes");
         } else {
             throw new Error("Something went wrong, please try again later..");
@@ -480,6 +482,7 @@ app.get("/routes/favorite_routes/:id", async (req, res) => {
     }
 });
 
+// Adding routes to favorite based on user id
 app.post("/routes/favorite_routes/:route_id", async (req, res) => {
     try {
         // Connect
@@ -534,6 +537,62 @@ app.post("/routes/favorite_routes/:route_id", async (req, res) => {
             error: "Something went wrong, please try again later...",
             value: e.message,
         });
+    } finally {
+        await client.close();
+    }
+});
+
+// Deleting route from favorites based on user id
+app.delete("/routes/favorite_routes/:route_id", async (req, res) => {
+    try {
+        // Connect
+        await client.connect();
+        const colU = client.db(dbName).collection("users");
+        const colFR = client.db(dbName).collection("favorite_routes");
+
+        // Determining the user to delete the favorite route from
+        // Validation for user
+        console.log("test");
+        if (!req.body.user_id) {
+            throw new Error("Please provide a user_id in the body");
+        }
+        // Finding user
+        console.log("2");
+        const user = await colU.findOne({ user_id: req.body.user_id });
+        // Not found
+        console.log("3");
+        if (!user) {
+            throw new Error(`No user with id ${req.body.user_id} found`);
+        }
+        console.log("4");
+        // Validation for favorite route
+        if (!req.query.route_id) {
+            throw new Error("Please provide a route_id in the query");
+        }
+        console.log("5");
+        // Finding route
+        const route = await colFR.findOne({ route_id: req.query.route_id });
+        // Not found
+        console.log("6");
+        if (!route) {
+            throw new Error(`No route with id ${req.query.route_id} found`);
+        }
+        console.log("7");
+        // Deleting from favorites
+        const deletedRoute = await colFR.deleteOne({ $and: [{ route_id: route.route_id }, { user_id: user.user_id }] });
+        if (deletedRoute.deletedCount === 1) {
+            res.status(200).send({ message: `Route with the name: ${route.route_name} successfully deleted from ${user.username}'s favorites` });
+        } else {
+            res.status(404).send({ message: `No routes with id ${req.query.id} found. Deleted 0 routes` });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            error: "Something went wrong, please try again later...",
+            value: e.message,
+        });
+    } finally {
+        await client.close();
     }
 });
 
