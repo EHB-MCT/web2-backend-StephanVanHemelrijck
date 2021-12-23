@@ -64,22 +64,52 @@
                 </div>
                 <ul>
                     <li class="scroll-to-link active" data-target="content-get-started">
-                        <a>Info</a>
+                        <a>INFO</a>
                     </li>
                     <li class="scroll-to-link" data-target="content-get-users">
-                        <a>Get Users</a>
+                        <a>GET USERS</a>
                     </li>
                     <li class="scroll-to-link" data-target="content-create-user">
-                        <a>Register User</a>
+                        <a>REGISTER USER</a>
                     </li>
                     <li class="scroll-to-link" data-target="content-login-user">
-                        <a>Login User</a>
+                        <a>LOGIN USER</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-update-user">
+                        <a>UPDATE USER PW</a>
                     </li>
                     <li class="scroll-to-link" data-target="content-get-user">
-                        <a>Get Single User</a>
+                        <a>GET SINGLE USER</a>
                     </li>
                     <li class="scroll-to-link" data-target="content-delete-user">
-                        <a>Delete User</a>
+                        <a>DELETE USER</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-get-routes">
+                        <a>GET ROUTES</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-get-route-by-id">
+                        <a>GET ROUTE BY ROUTE ID</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-get-routes-by-city">
+                        <a>GET ROUTES BY CITY</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-create-route">
+                        <a>CREATE ROUTE</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-delete-route">
+                        <a>DELETE ROUTE</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-delete-routes">
+                        <a>DELETE ALL ROUTES</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-fav-route">
+                        <a>FAVORITE ROUTE</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-fav-route-add">
+                        <a>ADD TO FAVORITES</a>
+                    </li>
+                    <li class="scroll-to-link" data-target="content-fav-route-del">
+                        <a>DELETE FROM FAVORITES</a>
                     </li>
                 </ul>
             </div>
@@ -131,6 +161,14 @@
                                 <td>password</td>
                                 <td>String</td>
                             </tr>
+                            <tr>
+                                <td>security_question</td>
+                                <td>String</td>
+                            </tr>
+                            <tr>
+                                <td>security_question_answer</td>
+                                <td>String</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -163,6 +201,45 @@
                             </tr>
                             <tr>
                                 <td>password</td>
+                                <td>String</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-update-user">
+                    <h2>UPDATE USER'S PASSWORD</h2>
+                    <p>
+                        This PUT call will look for an account in the database with the email provided. If that account exists, then it will check <br />
+                        the security answer you also have to provide, and update to your new password.
+                    </p>
+                    <p>
+                        To login an already existing user you need to make a POST call to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/password/reset</code>
+                    </p>
+                    <br />
+                    <h4>BODY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>email</td>
+                                <td>String</td>
+                            </tr>
+                            <tr>
+                                <td>security_question_answer</td>
+                                <td>String</td>
+                            </tr>
+                            <tr>
+                                <td>new_password</td>
+                                <td>String</td>
+                            </tr>
+                            <tr>
+                                <td>new_password_confirm</td>
                                 <td>String</td>
                             </tr>
                         </tbody>
@@ -212,7 +289,7 @@
                         <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/users/:email</code>
                     </p>
                     <br />
-                    <h4>HEADER PARAMETERS</h4>
+                    <h4>QUERY PARAMETERS</h4>
                     <table>
                         <thead>
                             <tr>
@@ -228,48 +305,303 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- <div class="overflow-hidden content-section" id="content-errors">
-                    <h2>Errors</h2>
-                    <p>The Westeros API uses the following error codes:</p>
+                <div class="overflow-hidden content-section" id="content-get-routes">
+                    <h2>Get Routes</h2>
+                    <p>
+                        To get all the routes from the database you need to make a GET request to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes</code>
+                    </p>
+                </div>
+                <div class="overflow-hidden content-section" id="content-get-route-by-id">
+                    <h2>Get Route by Route ID</h2>
+                    <p>
+                        To get a single route by its id you need to make a GET request to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/:route_id</code>
+                    </p>
+                    <br />
+                    <h4>HEADER PARAMETERS</h4>
                     <table>
                         <thead>
                             <tr>
-                                <th>Error Code</th>
-                                <th>Meaning</th>
+                                <th>Field</th>
+                                <th>Type</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>X000</td>
-                                <td>Some parameters are missing. This error appears when you don't pass every mandatory parameters.</td>
-                            </tr>
-                            <tr>
-                                <td>X001</td>
-                                <td>
-                                    Unknown or unvalid <code class="higlighted">secret_key</code>. This error appears if you use an unknow API key or if your
-                                    API key expired.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>X002</td>
-                                <td>
-                                    Unvalid <code class="higlighted">secret_key</code> for this domain. This error appears if you use an API key non specified
-                                    for your domain. Developper or Universal API keys doesn't have domain checker.
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>X003</td>
-                                <td>
-                                    Unknown or unvalid user <code class="higlighted">token</code>. This error appears if you use an unknow user
-                                    <code class="higlighted">token</code> or if the user <code class="higlighted">token</code> expired.
-                                </td>
+                                <td>route_id</td>
+                                <td>string</td>
                             </tr>
                         </tbody>
                     </table>
-                </div> -->
+                </div>
+                <div class="overflow-hidden content-section" id="content-get-routes-by-city">
+                    <h2>Get Routes by City</h2>
+                    <p>
+                        With this GET request, you can get all the routes currently existing by city. You could also provide a user_id in the body to get all
+                        the routes by city, made by a certain user. <br />
+                        Ideal for a "My routes" type of page. To get all the routes by city user_id from the database you need to make a GET request to the
+                        following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/city/:city</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>city</td>
+                                <td>string</td>
+                                <td>REQUIRED</td>
+                            </tr>
+                            <tr>
+                                <td>user_id</td>
+                                <td>string</td>
+                                <td>OPTIONAL</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-get-routes-by-user_id">
+                    <h2>Get Routes by User ID</h2>
+                    <p>
+                        To get a single route by its id by from the database you need to make a GET request to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/user/:id</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>id</td>
+                                <td>string</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-create-route">
+                    <h2>Create a new route</h2>
+                    <p>
+                        With this GET request, you can get all the routes currently existing by city. You could also provide a user_id in the body to get all
+                        the routes by city, made by a certain user. <br />
+                        Ideal for a "My routes" type of page. To get all the routes by city user_id from the database you need to make a POST request to the
+                        following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes</code>
+                    </p>
+                    <br />
+                    <h4>BODY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>created_by</td>
+                                <td>string</td>
+                                <td>The name of the user that made the route</td>
+                            </tr>
+                            <tr>
+                                <td>route_id</td>
+                                <td>string</td>
+                                <td>The id the route</td>
+                            </tr>
+                            <tr>
+                                <td>route_name</td>
+                                <td>string</td>
+                                <td>The name of the route</td>
+                            </tr>
+                            <tr>
+                                <td>route_start_location</td>
+                                <td>string</td>
+                                <td>IMPORTANT: This is a json object. See the other table.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h4>ROUTE_START_LOCATION OBJECT PROPERTIES</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>country</td>
+                                <td>string</td>
+                                <td>Country the route is in</td>
+                            </tr>
+                            <tr>
+                                <td>state</td>
+                                <td>string</td>
+                                <td>State the route starts in</td>
+                            </tr>
+                            <tr>
+                                <td>city</td>
+                                <td>string</td>
+                                <td>City the route starts in</td>
+                            </tr>
+                            <tr>
+                                <td>postcode</td>
+                                <td>string</td>
+                                <td>Postcode of the city</td>
+                            </tr>
+                            <tr>
+                                <td>name</td>
+                                <td>string</td>
+                                <td>This is the streetname</td>
+                            </tr>
+                            <tr>
+                                <td>point</td>
+                                <td>string</td>
+                                <td>JSON Object with properties lat and lng, standing for their respective latitude and longitude coordinates</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-delete-route">
+                    <h2>Delete Route by Id</h2>
+                    <p>
+                        To delete a route by its id by from the database you need to make a DELETE request to the following url :<br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/id/:id</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>id</td>
+                                <td>string</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-delete-routes">
+                    <h2>Delete all Routes</h2>
+                    <p>
+                        This DELETE request can only be accessed with those who have the permission to do so. The query requires a certain code.<br />
+                        To delete all the routes, you have to make a DELETE request to the following url: <br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/all</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>deleteKey</td>
+                                <td>string</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-fav-route">
+                    <h2>GET FAVORITE ROUTES BY USER ID</h2>
+                    <p>
+                        <br />
+                        To get favorites route from a user by his id, you have to make a GET request to the following url: <br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/favorite_routes/:id</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>id</td>
+                                <td>string</td>
+                                <td>This is the user's id</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-fav-route-add">
+                    <h2>ADD ROUTES TO YOUR FAVORITES</h2>
+                    <p>
+                        <br />
+                        To add routes to your favorites, you have to make a POST request to the following url: <br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/favorite_routes/:route_id</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>route_id</td>
+                                <td>string</td>
+                                <td>This is the route's id</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="overflow-hidden content-section" id="content-fav-route-add">
+                    <h2>DELETE ROUTES FROM YOUR FAVORITES</h2>
+                    <p>
+                        <br />
+                        To delete routes from your favorites, you have to make a DELETE request to the following url: <br />
+                        <code class="higlighted break-word">https://web2-routexploreapi.herokuapp.com/routes/favorite_routes/:route_id</code>
+                    </p>
+                    <br />
+                    <h4>QUERY PARAMETERS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>route_id</td>
+                                <td>string</td>
+                                <td>This is the route's id</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        <!-- Github Corner Ribbon - to remove (Ribbon created with : http://tholman.com/github-corners/ )-->
         <a
             href="https://github.com/ticlekiwi/API-Documentation-HTML-Template"
             class="github-corner"
